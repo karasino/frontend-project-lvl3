@@ -1,9 +1,8 @@
 export default {
   form: {
-    state: 'sent',
-    urlList: [],
-    error: '',
+    state: '',
   },
+  urlList: [],
   channels: [],
   posts: [],
 };
