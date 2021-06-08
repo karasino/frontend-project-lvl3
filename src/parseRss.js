@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { uniqueId } from 'lodash';
 
 export default (data) => {
   const parsedRss = {
@@ -12,22 +12,25 @@ export default (data) => {
   }
   const channelTitle = xmlDocument.querySelector('channel > title');
   const channelDescription = xmlDocument.querySelector('channel > description');
-  const channelId = _.uniqueId('channel_');
+  const id = uniqueId('channel_');
   const items = xmlDocument.querySelectorAll('item');
   parsedRss.channel = {
     title: channelTitle.textContent,
     description: channelDescription.textContent,
-    channelId,
+    id,
   };
   items.forEach((item) => {
     const title = item.querySelector('title');
     const link = item.querySelector('link');
-    const id = _.uniqueId('post_');
+    const description = item.querySelector('description');
+    const postId = uniqueId('post_')
     parsedRss.posts.push({
       title: title.textContent,
       link: link.innerHTML,
-      id,
-      channelId,
+      description: description.textContent,
+      channelId: id,
+      postId,
+      isWatched: false,
     });
   });
   return parsedRss;

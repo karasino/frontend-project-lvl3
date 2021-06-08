@@ -1,8 +1,11 @@
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import state from './state';
+import render from './render';
 
-const i18Next = i18next.init({
+const i18nInstance = i18next.createInstance({
   lng: 'en',
   debug: true,
   resources: {
@@ -20,65 +23,51 @@ const i18Next = i18next.init({
   },
 });
 
-export default onChange(state.form, (path, value) => {
-  const input = document.getElementById('inputUrl');
-  const submit = document.getElementById('submit');
-  input.classList.remove('is-invalid');
-  input.setAttribute('disabled', 'false');
-  submit.setAttribute('disabled', 'false');
-  const channelsList = document.querySelector('[data-id="channels"]');
-  channelsList.innerHTML = '';
-  const postsList = document.querySelector('[data-id="posts"]');
-  postsList.innerHTML = '';
-  const feedbackContainer = document.querySelector('[data-id="feedback"]');
-  feedbackContainer.textContent = '';
-  switch (value) {
-    case 'same url':
-      input.classList.add('is-invalid');
-      i18Next.then(() => {
-        feedbackContainer.textContent = i18next.t('sameUrl');
-      });
-      break;
-    case 'not url':
-      input.classList.add('is-invalid');
-      i18Next.then(() => {
-        feedbackContainer.textContent = i18next.t('notUrl');
-      });
-      break;
-    case 'network error':
-      i18Next.then(() => {
-        feedbackContainer.textContent = i18next.t('networkError');
-      });
-      break;
-    case 'parsing error':
-      i18Next.then(() => {
-        feedbackContainer.textContent = i18next.t('parsingError');
-      });
-      break;
-    case 'sending':
-      input.setAttribute('disabled', 'true');
-      submit.setAttribute('disabled', 'true');
-      break;
-    case 'success':
-      state.channels.forEach(({ title, description }) => {
-        const channelTitle = document.createElement('dt');
-        channelTitle.textContent = title;
-        const channelDescription = document.createElement('dd');
-        channelDescription.textContent = description;
-        channelsList.append(channelTitle, channelDescription);
-      });
-      state.posts.forEach(({ title, link }) => {
-        const post = document.createElement('a');
-        post.setAttribute('href', link);
-        post.classList.add('list-group-item', 'list-group-item-action');
-        post.textContent = title;
-        postsList.append(post);
-      });
-      i18Next.then(() => {
-        feedbackContainer.textContent = i18next.t('success');
-      });
-      break;
-    default:
-      break;
-  }
+export default onChange(state, (path, value) => {
+  i18nInstance.then(() => {
+    const props = {
+      input: {
+        isInvalid: false,
+        isDisabled: false,
+      },
+      isSubmitDisabled: false,
+      feedback: '',
+      channels: state.channels,
+      posts: state.posts,
+    };
+    if (path !== 'form.state') {
+      render(props);
+    }
+    switch (value) {
+      case 'same url':
+        props.input.isInvalid = true;
+        props.feedback = i18next.t('sameUrl');
+        render(props);
+        break;
+      case 'not url':
+        props.input.isInvalid = true;
+        props.feedback = i18next.t('notUrl');
+        render(props);
+        break;
+      case 'network error':
+        props.feedback = i18next.t('networkError');
+        render(props);
+        break;
+      case 'parsing error':
+        props.feedback = i18next.t('parsingError');
+        render(props);
+        break;
+      case 'sending':
+        props.input.isDisabled = true;
+        props.isSubmitDisabled = true;
+        render(props);
+        break;
+      case 'success':
+        props.feedback = i18next.t('success');
+        render(props);
+        break;
+      default:
+        break;
+    }
+  });
 });
