@@ -1,6 +1,12 @@
-import watchedState from './view';
-
-export default ({ input, isSubmitDisabled, feedback, channels, posts }) => {
+export default (props, state) => {
+  const {
+    inputState,
+    isSubmitDisabled,
+    feedback,
+    channels,
+    posts,
+  } = props;
+  const watchedState = state;
   const input = document.getElementById('inputUrl');
   const submit = document.getElementById('submit');
   input.classList.remove('is-invalid');
@@ -11,36 +17,43 @@ export default ({ input, isSubmitDisabled, feedback, channels, posts }) => {
   const postsList = document.querySelector('[data-id="posts"]');
   postsList.innerHTML = '';
   const feedbackContainer = document.querySelector('[data-id="feedback"]');
-  if (input.isInvalid) {
+  if (inputState.isInvalid) {
     input.classList.add('is-invalid');
   }
-  if (input.isDisabled) {
+  if (inputState.isDisabled) {
     input.setAttribute('disabled', 'true');
   }
   if (isSubmitDisabled) {
     submit.setAttribute('disabled', 'true');
   }
   feedbackContainer.textContent = feedback;
-  watchedState.channels.forEach(({ title, description }) => {
+  channels.forEach(({ title, description }) => {
     const channelTitle = document.createElement('dt');
     channelTitle.textContent = title;
     const channelDescription = document.createElement('dd');
     channelDescription.textContent = description;
     channelsList.append(channelTitle, channelDescription);
   });
-  watchedState.posts.forEach(({ title, link, description, isWatched, postId }) => {
-    const post = document.createElement('li');
-    post.classList.add('list-group-item');
-    const title = document.createElement('a');
-    title.setAttribute('href', link);
+  posts.forEach((postData) => {
+    const {
+      title,
+      link,
+      description,
+      isWatched,
+      postId,
+    } = postData;
+    const postElem = document.createElement('li');
+    postElem.classList.add('list-group-item');
+    const titleElem = document.createElement('a');
+    titleElem.setAttribute('href', link);
     if (isWatched) {
-      title.classList.remove('font-weight-bold');
-      title.classList.add('font-weight-normal');
+      titleElem.classList.remove('font-weight-bold');
+      titleElem.classList.add('font-weight-normal');
     } else {
-      title.classList.remove('font-weight-normal');
-      title.classList.add('font-weight-bold');
+      titleElem.classList.remove('font-weight-normal');
+      titleElem.classList.add('font-weight-bold');
     }
-    title.textContent = title;
+    titleElem.textContent = title;
     const detailsBtn = document.createElement('button');
     detailsBtn.setAttribute('type', 'button');
     detailsBtn.classList.add('btn', 'btn-primary');
@@ -49,18 +62,19 @@ export default ({ input, isSubmitDisabled, feedback, channels, posts }) => {
     detailsBtn.dataset.postId = postId;
     detailsBtn.textContent = 'Details';
     detailsBtn.addEventListener('click', () => {
-      const postIndex = watchedState.posts.findIndex(({ postId }) => postId === detailsBtn.dataset.postId);
-      const post = watchedState.posts[postIndex];
+      const postIndex = posts.findIndex((post) => (
+        post.postId === detailsBtn.dataset.postId));
+      const post = posts[postIndex];
       watchedState.posts[postIndex].isWatched = true;
       const detailsModal = document.getElementById('detailsModal');
       const modalTitle = detailsModal.querySelector('.modal-title');
       const modalBody = detailsModal.querySelector('.modal-body');
       const modalViewButton = detailsModal.querySelector('.modal-footer > a');
-      modalTitle.textContent = post.title;
-      modalBody.textContent = post.description;
+      modalTitle.textContent = title;
+      modalBody.textContent = description;
       modalViewButton.setAttribute('href', post.link);
     });
-    post.append(title, detailsBtn);
-    postsList.append(post);
+    postElem.append(titleElem, detailsBtn);
+    postsList.append(postElem);
   });
 };

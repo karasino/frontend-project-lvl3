@@ -23,7 +23,7 @@ export default (data) => {
     const title = item.querySelector('title');
     const link = item.querySelector('link');
     const description = item.querySelector('description');
-    const postId = uniqueId('post_')
+    const postId = uniqueId('post_');
     parsedRss.posts.push({
       title: title.textContent,
       link: link.innerHTML,

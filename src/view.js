@@ -1,5 +1,3 @@
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import state from './state';
@@ -23,10 +21,10 @@ const i18nInstance = i18next.createInstance({
   },
 });
 
-export default onChange(state, (path, value) => {
+const watchedState = onChange(state, (path, value) => {
   i18nInstance.then(() => {
     const props = {
-      input: {
+      inputState: {
         isInvalid: false,
         isDisabled: false,
       },
@@ -36,38 +34,40 @@ export default onChange(state, (path, value) => {
       posts: state.posts,
     };
     if (path !== 'form.state') {
-      render(props);
+      render(props, watchedState);
     }
     switch (value) {
       case 'same url':
-        props.input.isInvalid = true;
+        props.inputState.isInvalid = true;
         props.feedback = i18next.t('sameUrl');
-        render(props);
+        render(props, watchedState);
         break;
       case 'not url':
-        props.input.isInvalid = true;
+        props.inputState.isInvalid = true;
         props.feedback = i18next.t('notUrl');
-        render(props);
+        render(props, watchedState);
         break;
       case 'network error':
         props.feedback = i18next.t('networkError');
-        render(props);
+        render(props, watchedState);
         break;
       case 'parsing error':
         props.feedback = i18next.t('parsingError');
-        render(props);
+        render(props, watchedState);
         break;
       case 'sending':
-        props.input.isDisabled = true;
+        props.inputState.isDisabled = true;
         props.isSubmitDisabled = true;
-        render(props);
+        render(props, watchedState);
         break;
       case 'success':
         props.feedback = i18next.t('success');
-        render(props);
+        render(props, watchedState);
         break;
       default:
         break;
     }
   });
 });
+
+export default watchedState;

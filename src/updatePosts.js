@@ -4,7 +4,7 @@ import watchedState from './view';
 import parseRss from './parseRss';
 
 const updatePosts = () => {
-  const promises = state.urlList.map((url) => {
+  const promises = watchedState.urlList.map((url) => {
     const rssFile = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`);
     return parseRss(rssFile);
   });
