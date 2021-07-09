@@ -19,7 +19,7 @@ form.addEventListener('submit', (e) => {
   if (watchedState.urlList.includes(url)) {
     watchedState.state = 'same url';
   }
-  schema.isValid(url)
+  schema.validate(url)
     .catch(() => {
       watchedState.state = 'not url';
     })

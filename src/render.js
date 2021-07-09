@@ -1,47 +1,47 @@
-export default (props, state) => {
-  const {
-    inputState,
-    isSubmitDisabled,
-    feedback,
-    channels,
-    posts,
-  } = props;
-  const watchedState = state;
-  const input = document.getElementById('inputUrl');
-  const submit = document.getElementById('submit');
-  input.classList.remove('is-invalid');
-  input.setAttribute('disabled', 'false');
-  submit.setAttribute('disabled', 'false');
-  const channelsList = document.querySelector('[data-id="channels"]');
+/* eslint no-param-reassign: ["error", { "props": false }] */
+
+import {
+  modalEl,
+  formEl,
+  feedback,
+  channelsList,
+  postsList,
+} from './init';
+
+const renderChannels = ({ channels }) => {
   channelsList.innerHTML = '';
-  const postsList = document.querySelector('[data-id="posts"]');
-  postsList.innerHTML = '';
-  const feedbackContainer = document.querySelector('[data-id="feedback"]');
-  if (inputState.isInvalid) {
-    input.classList.add('is-invalid');
-  }
-  if (inputState.isDisabled) {
-    input.setAttribute('disabled', 'true');
-  }
-  if (isSubmitDisabled) {
-    submit.setAttribute('disabled', 'true');
-  }
-  feedbackContainer.textContent = feedback;
   channels.forEach(({ title, description }) => {
-    const channelTitle = document.createElement('dt');
-    channelTitle.textContent = title;
-    const channelDescription = document.createElement('dd');
-    channelDescription.textContent = description;
-    channelsList.append(channelTitle, channelDescription);
+    const dt = document.createElement('dt');
+    const dd = document.createElement('dd');
+    dt.textContent = title;
+    dd.textContent = description;
+    channelsList.append(dt, dd);
   });
-  posts.forEach((postData) => {
+};
+
+const renderModal = ({ posts, modal }) => {
+  const {
+    title,
+    description,
+    link,
+  } = posts[modal.postIndex];
+  const modalTitle = modalEl.querySelector('.modal-title');
+  const modalBody = modalEl.querySelector('.modal-body');
+  const modalViewButton = modalEl.querySelector('.modal-footer > a');
+  modalTitle.textContent = title;
+  modalBody.textContent = description;
+  modalViewButton.setAttribute('href', link);
+};
+
+const renderPosts = ({ posts }, watchedState) => {
+  postsList.innerHTML = '';
+  posts.forEach((post) => {
     const {
       title,
       link,
-      description,
-      isWatched,
       postId,
-    } = postData;
+      isWatched,
+    } = post;
     const postElem = document.createElement('li');
     postElem.classList.add('list-group-item');
     const titleElem = document.createElement('a');
@@ -62,19 +62,48 @@ export default (props, state) => {
     detailsBtn.dataset.postId = postId;
     detailsBtn.textContent = 'Details';
     detailsBtn.addEventListener('click', () => {
-      const postIndex = posts.findIndex((post) => (
-        post.postId === detailsBtn.dataset.postId));
-      const post = posts[postIndex];
+      const postIndex = posts.findIndex((p) => (
+        p.postId === detailsBtn.dataset.postId));
       watchedState.posts[postIndex].isWatched = true;
-      const detailsModal = document.getElementById('detailsModal');
-      const modalTitle = detailsModal.querySelector('.modal-title');
-      const modalBody = detailsModal.querySelector('.modal-body');
-      const modalViewButton = detailsModal.querySelector('.modal-footer > a');
-      modalTitle.textContent = title;
-      modalBody.textContent = description;
-      modalViewButton.setAttribute('href', post.link);
+      watchedState.modal.postIndex = postIndex;
     });
     postElem.append(titleElem, detailsBtn);
     postsList.append(postElem);
   });
+};
+
+const renderForm = ({ form }, i18n) => {
+  const input = formEl.querySelector('input');
+  const submit = formEl.querySelector('submit');
+  input.classList.remove('is-invalid');
+  input.setAttribute('disabled', 'false');
+  submit.setAttribute('disabled', 'false');
+  feedback.textContent = '';
+  switch (form.status) {
+    case 'valid':
+      break;
+    case 'invalid':
+      input.classList.add('is-invalid');
+      feedback.textContent = i18n.t.feedback(form.error);
+      break;
+    case 'sending':
+      input.setAttribute('disabled', 'true');
+      submit.setAttribute('disabled', 'true');
+      break;
+    case 'error':
+      feedback.textContent = i18n.t.feedback(form.error);
+      break;
+    case 'success':
+      feedback.textContent = i18n.t.feedback('success');
+      break;
+    default:
+      break;
+  }
+};
+
+export {
+  renderChannels,
+  renderPosts,
+  renderModal,
+  renderForm,
 };
