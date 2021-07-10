@@ -1,12 +1,10 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
-import {
-  modalEl,
-  formEl,
-  feedback,
-  channelsList,
-  postsList,
-} from './init';
+const modalEl = document.getElementById('detailsModal');
+const formEl = document.getElementById('rssForm');
+const feedback = document.getElementById('feedback');
+const channelsList = document.getElementById('channels');
+const postsList = document.getElementById('posts');
 
 const renderChannels = ({ channels }) => {
   channelsList.innerHTML = '';

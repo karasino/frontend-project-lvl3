@@ -19,11 +19,7 @@ const state = {
   channels: [],
 };
 
-const modalEl = document.getElementById('detailsModal');
 const formEl = document.getElementById('rssForm');
-const feedback = document.getElementById('feedback');
-const channelsList = document.getElementById('channels');
-const postsList = document.getElementById('posts');
 
 export default () => {
   const i18n = i18next.init({
@@ -94,13 +90,4 @@ export default () => {
     }
   });
   updatePosts(watchedState);
-};
-
-export {
-  state,
-  modalEl,
-  formEl,
-  feedback,
-  channelsList,
-  postsList,
 };
