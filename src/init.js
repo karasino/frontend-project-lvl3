@@ -62,7 +62,9 @@ export default () => {
     const url = e.target.elements.input.value;
     try {
       watchedState.form.status = 'valid';
+      console.log(`im in try section and this is url ${url}`);
       const validUrl = schema.validateSync(url);
+      console.log('validated');
       watchedState.form.status = 'sending';
       axios.get('https://hexlet-allorigins.herokuapp.com/get', {
         params: {
@@ -85,6 +87,7 @@ export default () => {
           watchedState.form.status = 'error';
         });
     } catch ({ errors: [validationError] }) {
+      console.log('catch validation error');
       watchedState.form.error = validationError;
       watchedState.form.status = 'invalid';
     }

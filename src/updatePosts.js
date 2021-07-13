@@ -17,7 +17,7 @@ const updatePosts = (watchedState) => {
         watchedState.posts = updatedPosts;
       });
   });
-  setTimeout(updatePosts, 5000);
+  setTimeout(() => updatePosts(watchedState), 5000);
 };
 
 export default updatePosts;
