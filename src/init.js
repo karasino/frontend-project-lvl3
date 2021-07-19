@@ -22,21 +22,19 @@ const state = {
 const formEl = document.getElementById('rssForm');
 
 export default () => {
-  const i18n = i18next.init({
+  i18next.init({
     lng: 'en',
     debug: true,
     resources: {
       en: {
         translation: {
-          feedback: {
-            notUrl: 'URL is invalid.',
-            existed: 'URL already in the list.',
-            required: 'This is required field.',
-            error: 'Something goes wrong with form validation.',
-            networkError: 'Network error, please try again.',
-            parsingError: 'Unable to parse RSS',
-            success: 'Channel successfully added.',
-          },
+          notUrl: 'URL is invalid.',
+          existed: 'URL already in the list.',
+          required: 'This is a required field.',
+          error: 'Something goes wrong with form validation.',
+          networkError: 'Network error, please try again.',
+          parsingError: 'Unable to parse RSS',
+          success: 'Channel successfully added.',
         },
       },
     },
@@ -45,9 +43,11 @@ export default () => {
   yup.setLocale({
     string: {
       url: 'notUrl',
-      notOneOf: 'existed',
-      required: 'required',
       default: 'error',
+    },
+    mixed: {
+      required: 'required',
+      notOneOf: 'existed',
     },
   });
   const schema = yup.string()
@@ -55,16 +55,14 @@ export default () => {
     .notOneOf(state.urls)
     .required();
 
-  const watchedState = watch(state, i18n);
+  const watchedState = watch(state, i18next);
 
   formEl.addEventListener('submit', (e) => {
     e.preventDefault();
     const url = e.target.elements.input.value;
     try {
       watchedState.form.status = 'valid';
-      console.log(`im in try section and this is url ${url}`);
       const validUrl = schema.validateSync(url);
-      console.log('validated');
       watchedState.form.status = 'sending';
       axios.get('https://hexlet-allorigins.herokuapp.com/get', {
         params: {
@@ -80,14 +78,13 @@ export default () => {
         })
         .catch((error) => {
           if (error.response || error.request) {
-            watchedState.form.error = 'network';
+            watchedState.form.error = 'networkError';
           } else {
-            watchedState.form.error = 'parsing';
+            watchedState.form.error = 'parsingError';
           }
           watchedState.form.status = 'error';
         });
     } catch ({ errors: [validationError] }) {
-      console.log('catch validation error');
       watchedState.form.error = validationError;
       watchedState.form.status = 'invalid';
     }

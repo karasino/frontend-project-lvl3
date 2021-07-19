@@ -3,7 +3,7 @@ import onChange from 'on-change';
 
 const modalEl = document.getElementById('detailsModal');
 const formEl = document.getElementById('rssForm');
-const feedback = document.getElementById('feedback');
+const feedback = document.querySelector('[data-id="feedback"]');
 const channelsList = document.getElementById('channels');
 const postsList = document.getElementById('posts');
 
@@ -72,35 +72,32 @@ const renderPosts = ({ posts }, watchedState) => {
 };
 
 const renderForm = ({ form }, i18n) => {
-  console.log(form.status);
   const input = formEl.querySelector('input');
-  const submit = formEl.querySelector('submit');
+  const submit = document.getElementById('submit');
   input.classList.remove('is-invalid');
   feedback.textContent = '';
   switch (form.status) {
     case 'valid':
       break;
     case 'invalid':
-      input.setAttribute('disabled', 'false');
-      submit.setAttribute('disabled', 'false');
-      console.log('renderForm invalid case');
+      input.removeAttribute('disabled');
+      submit.removeAttribute('disabled');
       input.classList.add('is-invalid');
-      feedback.textContent = i18n.t.feedback(form.error);
+      feedback.textContent = i18n.t(form.error);
       break;
     case 'sending':
-      input.setAttribute('disabled', 'true');
-      submit.setAttribute('disabled', 'true');
+      input.setAttribute('disabled', 'disabled');
+      submit.setAttribute('disabled', 'disabled');
       break;
     case 'error':
-      console.log('renerForm error case');
-      input.setAttribute('disabled', 'false');
-      submit.setAttribute('disabled', 'false');
-      feedback.textContent = i18n.t.feedback(form.error);
+      input.removeAttribute('disabled');
+      submit.removeAttribute('disabled');
+      feedback.textContent = i18n.t(form.error);
       break;
     case 'success':
-      input.setAttribute('disabled', 'false');
-      submit.setAttribute('disabled', 'false');
-      feedback.textContent = i18n.t.feedback('success');
+      input.removeAttribute('disabled');
+      submit.removeAttribute('disabled');
+      feedback.textContent = i18n.t('success');
       break;
     default:
       break;
@@ -120,7 +117,6 @@ export default (state, i18n) => {
         renderModal(state);
         break;
       case 'form.status':
-        console.log('watched state form section');
         renderForm(state, i18n);
         break;
       default:
