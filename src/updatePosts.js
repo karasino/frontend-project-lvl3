@@ -8,10 +8,10 @@ const updatePosts = (watchedState) => {
   watchedState.urls.forEach((url) => {
     axios.get('https://hexlet-allorigins.herokuapp.com/get', {
       params: {
-        url: encodeURIComponent(url),
+        url,
       },
     })
-      .then(parseRss)
+      .then((response) => parseRss(response.data.contents))
       .then(({ posts }) => {
         const updatedPosts = unionBy(watchedState.posts, posts, ({ link }) => link);
         watchedState.posts = updatedPosts;

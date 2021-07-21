@@ -1,5 +1,4 @@
 import i18next from 'i18next';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
 import axios from 'axios';
 import watch from './view';
@@ -28,13 +27,12 @@ export default () => {
     resources: {
       en: {
         translation: {
-          notUrl: 'URL is invalid.',
-          existed: 'URL already in the list.',
-          required: 'This is a required field.',
-          error: 'Something goes wrong with form validation.',
-          networkError: 'Network error, please try again.',
-          parsingError: 'Unable to parse RSS',
-          success: 'Channel successfully added.',
+          notUrl: 'Ссылка должна быть валидным URL',
+          existed: 'RSS уже существует',
+          required: 'Не должно быть пустым',
+          networkError: 'Ошибка сети',
+          parsingError: 'Ресурс не содержит валидный RSS',
+          success: 'RSS успешно загружен',
         },
       },
     },
@@ -50,15 +48,15 @@ export default () => {
       notOneOf: 'existed',
     },
   });
-  const schema = yup.string()
-    .url()
-    .notOneOf(state.urls)
-    .required();
 
   const watchedState = watch(state, i18next);
 
   formEl.addEventListener('submit', (e) => {
     e.preventDefault();
+    const schema = yup.string()
+      .url()
+      .notOneOf(state.urls)
+      .required();
     const url = e.target.elements.input.value;
     try {
       watchedState.form.status = 'valid';
@@ -66,14 +64,15 @@ export default () => {
       watchedState.form.status = 'sending';
       axios.get('https://hexlet-allorigins.herokuapp.com/get', {
         params: {
-          url: encodeURIComponent(validUrl),
+          url: validUrl,
         },
       })
-        .then((response) => parseRss(response.data))
+        .then((response) => parseRss(response.data.contents))
         .then((parsedRss) => {
           const { channel, posts } = parsedRss;
           watchedState.channels.push(channel);
           watchedState.posts = state.posts.concat(posts);
+          state.urls.push(validUrl);
           watchedState.form.status = 'success';
         })
         .catch((error) => {
@@ -82,7 +81,6 @@ export default () => {
           } else {
             watchedState.form.error = 'parsingError';
           }
-          watchedState.form.status = 'error';
         });
     } catch ({ errors: [validationError] }) {
       watchedState.form.error = validationError;

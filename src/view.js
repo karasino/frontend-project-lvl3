@@ -3,18 +3,20 @@ import onChange from 'on-change';
 
 const modalEl = document.getElementById('detailsModal');
 const formEl = document.getElementById('rssForm');
-const feedback = document.querySelector('[data-id="feedback"]');
+const feedback = document.getElementById('feedback');
 const channelsList = document.getElementById('channels');
 const postsList = document.getElementById('posts');
 
 const renderChannels = ({ channels }) => {
   channelsList.innerHTML = '';
   channels.forEach(({ title, description }) => {
-    const dt = document.createElement('dt');
-    const dd = document.createElement('dd');
-    dt.textContent = title;
-    dd.textContent = description;
-    channelsList.append(dt, dd);
+    const titleDiv = document.createElement('div');
+    const descriptionDiv = document.createElement('div');
+    titleDiv.classList.add('col-6', 'my-2');
+    descriptionDiv.classList.add('col-6', 'my-2');
+    titleDiv.innerHTML = `<b>${title}</b>`;
+    descriptionDiv.textContent = description;
+    channelsList.append(titleDiv, descriptionDiv);
   });
 };
 
@@ -41,33 +43,36 @@ const renderPosts = ({ posts }, watchedState) => {
       postId,
       isWatched,
     } = post;
-    const postElem = document.createElement('li');
-    postElem.classList.add('list-group-item');
-    const titleElem = document.createElement('a');
-    titleElem.setAttribute('href', link);
+    const titleDiv = document.createElement('div');
+    titleDiv.classList.add('col-4', 'my-2');
+    const titleLink = document.createElement('a');
+    titleLink.setAttribute('href', link);
     if (isWatched) {
-      titleElem.classList.remove('font-weight-bold');
-      titleElem.classList.add('font-weight-normal');
+      titleLink.classList.remove('font-weight-bold');
+      titleLink.classList.add('font-weight-normal');
     } else {
-      titleElem.classList.remove('font-weight-normal');
-      titleElem.classList.add('font-weight-bold');
+      titleLink.classList.remove('font-weight-normal');
+      titleLink.classList.add('font-weight-bold');
     }
-    titleElem.textContent = title;
+    titleLink.textContent = title;
+    const detailsDiv = document.createElement('div');
+    detailsDiv.classList.add('col-8', 'my-2');
     const detailsBtn = document.createElement('button');
     detailsBtn.setAttribute('type', 'button');
     detailsBtn.classList.add('btn', 'btn-primary');
     detailsBtn.dataset.toggle = 'modal';
     detailsBtn.dataset.target = '#detailsModal';
     detailsBtn.dataset.postId = postId;
-    detailsBtn.textContent = 'Details';
+    detailsBtn.textContent = 'Просмотр';
     detailsBtn.addEventListener('click', () => {
       const postIndex = posts.findIndex((p) => (
         p.postId === detailsBtn.dataset.postId));
       watchedState.posts[postIndex].isWatched = true;
       watchedState.modal.postIndex = postIndex;
     });
-    postElem.append(titleElem, detailsBtn);
-    postsList.append(postElem);
+    titleDiv.appendChild(titleLink);
+    detailsDiv.appendChild(detailsBtn);
+    postsList.append(titleDiv, detailsDiv);
   });
 };
 
@@ -106,21 +111,14 @@ const renderForm = ({ form }, i18n) => {
 
 export default (state, i18n) => {
   const watchedState = onChange(state, (path) => {
-    switch (path) {
-      case 'channels':
-        renderChannels(state);
-        break;
-      case 'posts':
-        renderPosts(state, watchedState);
-        break;
-      case 'modal.postIndex':
-        renderModal(state);
-        break;
-      case 'form.status':
-        renderForm(state, i18n);
-        break;
-      default:
-        break;
+    if (path === 'channels') {
+      renderChannels(state);
+    } else if (path.startsWith('posts')) {
+      renderPosts(state, watchedState);
+    } else if (path === 'modal.postIndex') {
+      renderModal(state);
+    } else if (path === 'form.status') {
+      renderForm(state, i18n);
     }
   });
   return watchedState;
