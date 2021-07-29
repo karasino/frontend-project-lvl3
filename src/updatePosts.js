@@ -6,13 +6,11 @@ import parseRss from './parseRss';
 
 const updatePosts = (watchedState) => {
   watchedState.urls.forEach((url) => {
-    axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-      params: {
-        url,
-      },
-    })
-      .then((response) => parseRss(response.data.contents))
-      .then(({ posts }) => {
+    const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
+    proxyUrl.search = `?url=${url}`;
+    axios.get(proxyUrl)
+      .then((response) => {
+        const { posts } = parseRss(response.data.contents);
         const updatedPosts = unionBy(watchedState.posts, posts, ({ link }) => link);
         watchedState.posts = updatedPosts;
       });

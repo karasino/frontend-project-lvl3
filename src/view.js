@@ -1,13 +1,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 import onChange from 'on-change';
 
-const modalEl = document.getElementById('detailsModal');
-const formEl = document.getElementById('rssForm');
-const feedback = document.getElementById('feedback');
-const channelsList = document.getElementById('channels');
-const postsList = document.getElementById('posts');
-
-const renderChannels = ({ channels }) => {
+const renderChannels = ({ channels }, channelsList) => {
   channelsList.innerHTML = '';
   channels.forEach(({ title, description }) => {
     const titleDiv = document.createElement('div');
@@ -20,7 +14,7 @@ const renderChannels = ({ channels }) => {
   });
 };
 
-const renderModal = ({ posts, modal }) => {
+const renderModal = ({ posts, modal }, modalEl) => {
   const {
     title,
     description,
@@ -34,7 +28,7 @@ const renderModal = ({ posts, modal }) => {
   modalViewButton.setAttribute('href', link);
 };
 
-const renderPosts = ({ posts }, watchedState) => {
+const renderPosts = ({ posts }, watchedState, postsList) => {
   postsList.innerHTML = '';
   posts.forEach((post) => {
     const {
@@ -76,20 +70,20 @@ const renderPosts = ({ posts }, watchedState) => {
   });
 };
 
-const renderForm = ({ form }, i18n) => {
+const renderFormValidation = (form, i18n, formEl, feedback) => {
   const input = formEl.querySelector('input');
-  const submit = document.getElementById('submit');
   input.classList.remove('is-invalid');
   feedback.textContent = '';
-  switch (form.status) {
-    case 'valid':
-      break;
-    case 'invalid':
-      input.removeAttribute('disabled');
-      submit.removeAttribute('disabled');
-      input.classList.add('is-invalid');
-      feedback.textContent = i18n.t(form.error);
-      break;
+  if (!form.isValid) {
+    input.classList.add('is-invalid');
+    feedback.textContent = i18n.t(form.error);
+  }
+};
+
+const renderFormSending = (addFeedProcess, i18n, formEl, feedback) => {
+  const input = formEl.querySelector('input');
+  const submit = document.getElementById('submit');
+  switch (addFeedProcess.status) {
     case 'sending':
       input.setAttribute('disabled', 'disabled');
       submit.setAttribute('disabled', 'disabled');
@@ -97,7 +91,7 @@ const renderForm = ({ form }, i18n) => {
     case 'error':
       input.removeAttribute('disabled');
       submit.removeAttribute('disabled');
-      feedback.textContent = i18n.t(form.error);
+      feedback.textContent = i18n.t(addFeedProcess.error);
       break;
     case 'success':
       input.removeAttribute('disabled');
@@ -109,16 +103,25 @@ const renderForm = ({ form }, i18n) => {
   }
 };
 
-export default (state, i18n) => {
+export default (state, i18n, domElems) => {
+  const {
+    formEl,
+    modalEl,
+    feedback,
+    channelsList,
+    postsList,
+  } = domElems;
   const watchedState = onChange(state, (path) => {
     if (path === 'channels') {
-      renderChannels(state);
+      renderChannels(state, channelsList);
     } else if (path.startsWith('posts')) {
-      renderPosts(state, watchedState);
+      renderPosts(state, watchedState, postsList);
     } else if (path === 'modal.postIndex') {
-      renderModal(state);
-    } else if (path === 'form.status') {
-      renderForm(state, i18n);
+      renderModal(state, modalEl);
+    } else if (path === 'form.isValid') {
+      renderFormValidation(state.form, i18n, formEl, feedback);
+    } else if (path === 'addFeedProcess.status') {
+      renderFormSending(state.addFeedProcess, i18n, formEl, feedback);
     }
   });
   return watchedState;

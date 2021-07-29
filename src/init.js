@@ -5,22 +5,38 @@ import watch from './view';
 import parseRss from './parseRss';
 import updatePosts from './updatePosts';
 
-const state = {
-  form: {
-    status: 'valid',
-    error: null,
-  },
-  modal: {
-    postIndex: null,
-  },
-  urls: [],
-  posts: [],
-  channels: [],
-};
-
-const formEl = document.getElementById('rssForm');
-
 export default () => {
+  const state = {
+    form: {
+      isValid: true,
+      error: null,
+    },
+    addFeedProcess: {
+      status: 'ready',
+      error: null,
+    },
+    modal: {
+      postIndex: null,
+    },
+    urls: [],
+    posts: [],
+    channels: [],
+  };
+
+  const formEl = document.getElementById('rssForm');
+  const modalEl = document.getElementById('detailsModal');
+  const feedback = document.getElementById('feedback');
+  const channelsList = document.getElementById('channels');
+  const postsList = document.getElementById('posts');
+
+  const domElems = {
+    formEl,
+    modalEl,
+    feedback,
+    channelsList,
+    postsList,
+  };
+
   i18next.init({
     lng: 'en',
     debug: true,
@@ -48,44 +64,53 @@ export default () => {
       notOneOf: 'existed',
     },
   });
+  const schema = yup.string()
+    .url()
+    .required();
 
-  const watchedState = watch(state, i18next);
+  const validate = (url) => {
+    try {
+      schema
+        .notOneOf(state.urls)
+        .validateSync(url);
+    } catch (error) {
+      return error;
+    }
+    return null;
+  };
+
+  const watchedState = watch(state, i18next, domElems);
 
   formEl.addEventListener('submit', (e) => {
     e.preventDefault();
-    const schema = yup.string()
-      .url()
-      .notOneOf(state.urls)
-      .required();
     const url = e.target.elements.input.value;
-    try {
-      watchedState.form.status = 'valid';
-      const validUrl = schema.validateSync(url);
-      watchedState.form.status = 'sending';
-      axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-        params: {
-          url: validUrl,
-        },
-      })
-        .then((response) => parseRss(response.data.contents))
-        .then((parsedRss) => {
-          const { channel, posts } = parsedRss;
-          watchedState.channels.push(channel);
-          watchedState.posts = state.posts.concat(posts);
-          state.urls.push(validUrl);
-          watchedState.form.status = 'success';
-        })
-        .catch((error) => {
-          if (error.response || error.request) {
-            watchedState.form.error = 'networkError';
-          } else {
-            watchedState.form.error = 'parsingError';
-          }
-        });
-    } catch ({ errors: [validationError] }) {
-      watchedState.form.error = validationError;
-      watchedState.form.status = 'invalid';
+    watchedState.form.isValid = true;
+    const validationError = validate(url);
+    if (validationError) {
+      const { errors: [error] } = validationError;
+      watchedState.form.error = error;
+      watchedState.form.isValid = false;
+      return;
     }
+    watchedState.addFeedProcess.status = 'sending';
+    const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
+    proxyUrl.search = `?url=${url}`;
+    axios.get(proxyUrl)
+      .then((response) => {
+        const { channel, posts } = parseRss(response.data.contents);
+        watchedState.channels.push(channel);
+        watchedState.posts = state.posts.concat(posts);
+        state.urls.push(url);
+        watchedState.addFeedProcess.status = 'success';
+      })
+      .catch((error) => {
+        watchedState.addFeedProcess.status = 'error';
+        if (error.response || error.request) {
+          watchedState.addFeedProcess.error = 'networkError';
+        } else {
+          watchedState.addFeedProcess.error = 'parsingError';
+        }
+      });
   });
   updatePosts(watchedState);
 };
