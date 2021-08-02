@@ -76,7 +76,7 @@ const renderFormValidation = (form, i18n, formEl, feedback) => {
   feedback.textContent = '';
   if (!form.isValid) {
     input.classList.add('is-invalid');
-    feedback.textContent = i18n.t(form.error);
+    feedback.textContent = i18n(form.error);
   }
 };
 
@@ -91,12 +91,12 @@ const renderFormSending = (addFeedProcess, i18n, formEl, feedback) => {
     case 'error':
       input.removeAttribute('disabled');
       submit.removeAttribute('disabled');
-      feedback.textContent = i18n.t(addFeedProcess.error);
+      feedback.textContent = i18n(addFeedProcess.error);
       break;
     case 'success':
       input.removeAttribute('disabled');
       submit.removeAttribute('disabled');
-      feedback.textContent = i18n.t('success');
+      feedback.textContent = i18n('success');
       break;
     default:
       break;
