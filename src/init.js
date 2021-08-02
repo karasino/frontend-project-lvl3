@@ -63,10 +63,10 @@ export default () => {
   };
 
   i18next.init({
-    lng: 'en',
+    lng: 'ru',
     debug: true,
     resources: {
-      en: {
+      ru: {
         translation: {
           notUrl: 'Ссылка должна быть валидным URL',
           existed: 'RSS уже существует',
