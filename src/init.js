@@ -115,6 +115,6 @@ export default () => {
       updatePosts(watchedState);
     };
     init();
-    return Promise.resolve(init);
+    return init;
   });
 };
