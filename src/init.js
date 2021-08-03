@@ -114,4 +114,5 @@ export default () => {
     updatePosts(watchedState);
     return t;
   });
+  return (x) => x;
 };
