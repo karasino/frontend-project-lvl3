@@ -62,7 +62,7 @@ export default () => {
     return null;
   };
 
-  i18next.init({
+  return i18next.init({
     lng: 'ru',
     debug: true,
     resources: {
@@ -78,43 +78,39 @@ export default () => {
       },
     },
   }).then((t) => {
-    const init = () => {
-      const watchedState = watch(state, t, domElems);
+    const watchedState = watch(state, t, domElems);
 
-      formEl.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const url = e.target.elements.input.value;
-        watchedState.form.isValid = true;
-        const validationError = validate(url);
-        if (validationError) {
-          const { errors: [error] } = validationError;
-          watchedState.form.error = error;
-          watchedState.form.isValid = false;
-          return;
-        }
-        watchedState.addFeedProcess.status = 'sending';
-        const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
-        proxyUrl.search = `?url=${url}`;
-        axios.get(proxyUrl)
-          .then((response) => {
-            const { channel, posts } = parseRss(response.data.contents);
-            watchedState.channels.push(channel);
-            watchedState.posts = state.posts.concat(posts);
-            state.urls.push(url);
-            watchedState.addFeedProcess.status = 'success';
-          })
-          .catch((error) => {
-            watchedState.addFeedProcess.status = 'error';
-            if (error.response || error.request) {
-              watchedState.addFeedProcess.error = 'networkError';
-            } else {
-              watchedState.addFeedProcess.error = 'parsingError';
-            }
-          });
-      });
-      updatePosts(watchedState);
-    };
-    init();
-    return init;
+    formEl.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const url = e.target.elements.input.value;
+      watchedState.form.isValid = true;
+      const validationError = validate(url);
+      if (validationError) {
+        const { errors: [error] } = validationError;
+        watchedState.form.error = error;
+        watchedState.form.isValid = false;
+        return;
+      }
+      watchedState.addFeedProcess.status = 'sending';
+      const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
+      proxyUrl.search = `?url=${url}`;
+      axios.get(proxyUrl)
+        .then((response) => {
+          const { channel, posts } = parseRss(response.data.contents);
+          watchedState.channels.push(channel);
+          watchedState.posts = state.posts.concat(posts);
+          state.urls.push(url);
+          watchedState.addFeedProcess.status = 'success';
+        })
+        .catch((error) => {
+          watchedState.addFeedProcess.status = 'error';
+          if (error.response || error.request) {
+            watchedState.addFeedProcess.error = 'networkError';
+          } else {
+            watchedState.addFeedProcess.error = 'parsingError';
+          }
+        });
+    });
+    updatePosts(watchedState);
   });
 };
