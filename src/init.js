@@ -93,7 +93,7 @@ export default () => {
       }
       watchedState.addFeedProcess.status = 'sending';
       const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
-      proxyUrl.search = `?url=${url}`;
+      proxyUrl.search = `?url=${url}&disableCache=true`;
       axios.get(proxyUrl)
         .then((response) => {
           const { channel, posts } = parseRss(response.data.contents);

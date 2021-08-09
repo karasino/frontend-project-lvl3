@@ -7,7 +7,7 @@ import parseRss from './parseRss';
 const updatePosts = (watchedState) => {
   watchedState.urls.forEach((url) => {
     const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
-    proxyUrl.search = `?url=${url}`;
+    proxyUrl.search = `?url=${url}&disableCache=true`;
     axios.get(proxyUrl)
       .then((response) => {
         const { posts } = parseRss(response.data.contents);
