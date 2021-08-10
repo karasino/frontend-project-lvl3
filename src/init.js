@@ -62,7 +62,9 @@ export default () => {
     return null;
   };
 
-  return i18next.init({
+  const instance = i18next.createInstance();
+
+  return instance.init({
     lng: 'ru',
     debug: true,
     resources: {
