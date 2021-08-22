@@ -1,25 +1,32 @@
 import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
+import { uniqueId } from 'lodash';
 import watch from './view';
 import parseRss from './parseRss';
-import updatePosts from './updatePosts';
+import updateItems from './updatePosts';
 
 export default () => {
+  const addProxy = (url) => {
+    const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
+    proxyUrl.searchParams.set('url', url);
+    proxyUrl.searchParams.set('disableCache', true);
+    return proxyUrl;
+  };
+
   const state = {
     form: {
       isValid: true,
-      error: null,
+      errors: null,
     },
     addFeedProcess: {
       status: 'ready',
       error: null,
     },
     modal: {
-      postIndex: null,
+      itemIndex: null,
     },
-    urls: [],
-    posts: [],
+    items: [],
     channels: [],
   };
 
@@ -27,14 +34,14 @@ export default () => {
   const modalEl = document.getElementById('detailsModal');
   const feedback = document.getElementById('feedback');
   const channelsList = document.getElementById('channels');
-  const postsList = document.getElementById('posts');
+  const itemsList = document.getElementById('posts');
 
   const domElems = {
     formEl,
     modalEl,
     feedback,
     channelsList,
-    postsList,
+    itemsList,
   };
 
   yup.setLocale({
@@ -54,17 +61,17 @@ export default () => {
   const validate = (url) => {
     try {
       schema
-        .notOneOf(state.urls)
-        .validateSync(url);
-    } catch (error) {
-      return error;
+        .notOneOf(state.channels.map((channel) => channel.link))
+        .validateSync(url, { abortEarly: false });
+    } catch (errors) {
+      return errors;
     }
     return null;
   };
 
-  const instance = i18next.createInstance();
+  const i18nInstance = i18next.createInstance();
 
-  return instance.init({
+  return i18nInstance.init({
     lng: 'ru',
     debug: true,
     resources: {
@@ -75,6 +82,7 @@ export default () => {
           required: 'Не должно быть пустым',
           networkError: 'Ошибка сети',
           parsingError: 'Ресурс не содержит валидный RSS',
+          unknownError: 'Возникла неизвестная ошибка',
           success: 'RSS успешно загружен',
         },
       },
@@ -82,38 +90,56 @@ export default () => {
   }).then((t) => {
     const watchedState = watch(state, t, domElems);
 
+    itemsList.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') return;
+      const itemIndex = watchedState.items.findIndex((i) => (
+        i.itemId === e.target.dataset.itemId));
+      watchedState.items[itemIndex].isWatched = true;
+      watchedState.modal.itemIndex = itemIndex;
+    });
+
     formEl.addEventListener('submit', (e) => {
       e.preventDefault();
       const url = e.target.elements.input.value;
+      formEl.reset();
       watchedState.form.isValid = true;
-      const validationError = validate(url);
-      if (validationError) {
-        const { errors: [error] } = validationError;
+      const validationErrors = validate(url);
+      if (validationErrors) {
+        const { errors: [error] } = validationErrors;
         watchedState.form.error = error;
         watchedState.form.isValid = false;
         return;
       }
       watchedState.addFeedProcess.status = 'sending';
-      const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
-      proxyUrl.searchParams.set('url', url);
-      proxyUrl.searchParams.set('disableCache', true);
-      axios.get(proxyUrl.toString())
+      axios.get(addProxy(url).toString())
         .then((response) => {
-          const { channel, posts } = parseRss(response.data.contents);
+          const { channel, items } = parseRss(response.data.contents);
+          channel.link = url;
+          const channelId = uniqueId('channel_');
+          channel.id = channelId;
+          const completedItems = items.map((item) => {
+            const itemId = uniqueId('item_');
+            const completedItem = item;
+            completedItem.channelId = channelId;
+            completedItem.isWatched = false;
+            completedItem.itemId = itemId;
+            return completedItem;
+          });
           watchedState.channels.push(channel);
-          watchedState.posts = state.posts.concat(posts);
-          state.urls.push(url);
+          watchedState.items = state.items.concat(completedItems);
           watchedState.addFeedProcess.status = 'success';
         })
         .catch((error) => {
-          watchedState.addFeedProcess.status = 'error';
-          if (error.response || error.request) {
+          if (error.isAxiosError) {
             watchedState.addFeedProcess.error = 'networkError';
-          } else {
+          } else if (error.isValidationError) {
             watchedState.addFeedProcess.error = 'parsingError';
+          } else {
+            watchedState.addFeedProcess.error = 'unknownError';
           }
+          watchedState.addFeedProcess.status = 'error';
         });
     });
-    updatePosts(watchedState);
+    updateItems(watchedState, addProxy);
   });
 };

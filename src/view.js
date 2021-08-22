@@ -8,18 +8,18 @@ const renderChannels = ({ channels }, channelsList) => {
     const descriptionDiv = document.createElement('div');
     titleDiv.classList.add('col-6', 'my-2');
     descriptionDiv.classList.add('col-6', 'my-2');
-    titleDiv.innerHTML = `<b>${title}</b>`;
+    titleDiv.textContent = title;
     descriptionDiv.textContent = description;
     channelsList.append(titleDiv, descriptionDiv);
   });
 };
 
-const renderModal = ({ posts, modal }, modalEl) => {
+const renderModal = ({ items, modal }, modalEl) => {
   const {
     title,
     description,
     link,
-  } = posts[modal.postIndex];
+  } = items[modal.itemIndex];
   const modalTitle = modalEl.querySelector('.modal-title');
   const modalBody = modalEl.querySelector('.modal-body');
   const modalViewButton = modalEl.querySelector('.modal-footer > a');
@@ -28,15 +28,15 @@ const renderModal = ({ posts, modal }, modalEl) => {
   modalViewButton.setAttribute('href', link);
 };
 
-const renderPosts = ({ posts }, watchedState, postsList) => {
-  postsList.innerHTML = '';
-  posts.forEach((post) => {
+const renderItems = ({ items }, watchedState, itemsList) => {
+  itemsList.innerHTML = '';
+  items.forEach((item) => {
     const {
       title,
       link,
-      postId,
+      itemId,
       isWatched,
-    } = post;
+    } = item;
     const titleDiv = document.createElement('div');
     titleDiv.classList.add('col-4', 'my-2');
     const titleLink = document.createElement('a');
@@ -56,17 +56,11 @@ const renderPosts = ({ posts }, watchedState, postsList) => {
     detailsBtn.classList.add('btn', 'btn-primary');
     detailsBtn.dataset.toggle = 'modal';
     detailsBtn.dataset.target = '#detailsModal';
-    detailsBtn.dataset.postId = postId;
+    detailsBtn.dataset.itemId = itemId;
     detailsBtn.textContent = 'Просмотр';
-    detailsBtn.addEventListener('click', () => {
-      const postIndex = posts.findIndex((p) => (
-        p.postId === detailsBtn.dataset.postId));
-      watchedState.posts[postIndex].isWatched = true;
-      watchedState.modal.postIndex = postIndex;
-    });
     titleDiv.appendChild(titleLink);
     detailsDiv.appendChild(detailsBtn);
-    postsList.append(titleDiv, detailsDiv);
+    itemsList.append(titleDiv, detailsDiv);
   });
 };
 
@@ -109,14 +103,14 @@ export default (state, i18n, domElems) => {
     modalEl,
     feedback,
     channelsList,
-    postsList,
+    itemsList,
   } = domElems;
   const watchedState = onChange(state, (path) => {
     if (path === 'channels') {
       renderChannels(state, channelsList);
-    } else if (path.startsWith('posts')) {
-      renderPosts(state, watchedState, postsList);
-    } else if (path === 'modal.postIndex') {
+    } else if (path.startsWith('items')) {
+      renderItems(state, watchedState, itemsList);
+    } else if (path === 'modal.itemIndex') {
       renderModal(state, modalEl);
     } else if (path === 'form.isValid') {
       renderFormValidation(state.form, i18n, formEl, feedback);
