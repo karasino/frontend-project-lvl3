@@ -79,16 +79,16 @@ const renderFormSending = (addFeedProcess, i18n, formEl, feedback) => {
   const submit = document.getElementById('submit');
   switch (addFeedProcess.status) {
     case 'sending':
-      input.setAttribute('disabled', 'disabled');
+      input.setAttribute('readonly', 'readonly');
       submit.setAttribute('disabled', 'disabled');
       break;
     case 'error':
-      input.removeAttribute('disabled');
+      input.removeAttribute('readonly');
       submit.removeAttribute('disabled');
       feedback.textContent = i18n(addFeedProcess.error);
       break;
     case 'success':
-      input.removeAttribute('disabled');
+      input.removeAttribute('readonly');
       submit.removeAttribute('disabled');
       feedback.textContent = i18n('success');
       break;
