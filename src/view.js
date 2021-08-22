@@ -42,11 +42,11 @@ const renderItems = ({ items }, watchedState, itemsList) => {
     const titleLink = document.createElement('a');
     titleLink.setAttribute('href', link);
     if (isWatched) {
-      titleLink.classList.remove('font-weight-bold');
-      titleLink.classList.add('font-weight-normal');
+      titleLink.classList.remove('fw-bold');
+      titleLink.classList.add('fw-normal');
     } else {
-      titleLink.classList.remove('font-weight-normal');
-      titleLink.classList.add('font-weight-bold');
+      titleLink.classList.remove('fw-normal');
+      titleLink.classList.add('fw-bold');
     }
     titleLink.textContent = title;
     const detailsDiv = document.createElement('div');
