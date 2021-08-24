@@ -14,6 +14,15 @@ export default () => {
     return proxyUrl;
   };
 
+  const completeItems = (items, channelId) => items.map((item) => {
+    const itemId = uniqueId('item_');
+    const completedItem = item;
+    completedItem.channelId = channelId;
+    completedItem.isWatched = false;
+    completedItem.itemId = itemId;
+    return completedItem;
+  });
+
   const state = {
     form: {
       isValid: true,
@@ -117,14 +126,7 @@ export default () => {
           channel.link = url;
           const channelId = uniqueId('channel_');
           channel.id = channelId;
-          const completedItems = items.map((item) => {
-            const itemId = uniqueId('item_');
-            const completedItem = item;
-            completedItem.channelId = channelId;
-            completedItem.isWatched = false;
-            completedItem.itemId = itemId;
-            return completedItem;
-          });
+          const completedItems = completeItems(items, channelId);
           watchedState.channels.push(channel);
           watchedState.items = state.items.concat(completedItems);
           watchedState.addFeedProcess.status = 'success';
@@ -140,6 +142,6 @@ export default () => {
           watchedState.addFeedProcess.status = 'error';
         });
     });
-    updateItems(watchedState, addProxy);
+    updateItems(watchedState, addProxy, completeItems);
   });
 };

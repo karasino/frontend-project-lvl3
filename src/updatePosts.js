@@ -1,10 +1,10 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
-import { differenceBy, uniqueId } from 'lodash';
+import { differenceBy } from 'lodash';
 import axios from 'axios';
 import parseRss from './parseRss';
 
-const updateItems = (watchedState, createUrl) => {
+const updateItems = (watchedState, createUrl, completeItems) => {
   Promise.resolve()
     .then(() => {
       watchedState.channels.map((channel) => ({ channelLink: channel.link, id: channel.id }))
@@ -13,14 +13,7 @@ const updateItems = (watchedState, createUrl) => {
             .then((response) => {
               const { items } = parseRss(response.data.contents);
               const uniqueItems = differenceBy(watchedState.items, items, ({ link }) => link);
-              const completedUniqueItems = uniqueItems.map((item) => {
-                const itemId = uniqueId('item_');
-                const completedItem = item;
-                completedItem.channelId = id;
-                completedItem.isWatched = false;
-                completedItem.itemId = itemId;
-                return completedItem;
-              });
+              const completedUniqueItems = completeItems(uniqueItems, id);
               watchedState.items = watchedState.items.concat(completedUniqueItems);
             });
         });

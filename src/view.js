@@ -54,8 +54,8 @@ const renderItems = ({ items }, watchedState, itemsList) => {
     const detailsBtn = document.createElement('button');
     detailsBtn.setAttribute('type', 'button');
     detailsBtn.classList.add('btn', 'btn-primary');
-    detailsBtn.dataset.toggle = 'modal';
-    detailsBtn.dataset.target = '#detailsModal';
+    detailsBtn.dataset.bsToggle = 'modal';
+    detailsBtn.dataset.bsTarget = '#detailsModal';
     detailsBtn.dataset.itemId = itemId;
     detailsBtn.textContent = 'Просмотр';
     titleDiv.appendChild(titleLink);
