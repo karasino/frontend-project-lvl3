@@ -15,11 +15,12 @@ const renderChannels = ({ channels }, channelsList) => {
 };
 
 const renderModal = ({ items, modal }, modalEl) => {
+  const item = items.find((i) => i.itemId === modal.itemId);
   const {
     title,
     description,
     link,
-  } = items[modal.itemIndex];
+  } = item;
   const modalTitle = modalEl.querySelector('.modal-title');
   const modalBody = modalEl.querySelector('.modal-body');
   const modalViewButton = modalEl.querySelector('.modal-footer > a');
@@ -28,7 +29,7 @@ const renderModal = ({ items, modal }, modalEl) => {
   modalViewButton.setAttribute('href', link);
 };
 
-const renderItems = ({ items }, watchedState, itemsList) => {
+const renderItems = ({ items }, watchedState, itemsList, i18n) => {
   itemsList.innerHTML = '';
   items.forEach((item) => {
     const {
@@ -57,7 +58,7 @@ const renderItems = ({ items }, watchedState, itemsList) => {
     detailsBtn.dataset.bsToggle = 'modal';
     detailsBtn.dataset.bsTarget = '#detailsModal';
     detailsBtn.dataset.itemId = itemId;
-    detailsBtn.textContent = 'Просмотр';
+    detailsBtn.textContent = i18n('view');
     titleDiv.appendChild(titleLink);
     detailsDiv.appendChild(detailsBtn);
     itemsList.append(titleDiv, detailsDiv);
@@ -109,8 +110,8 @@ export default (state, i18n, domElems) => {
     if (path === 'channels') {
       renderChannels(state, channelsList);
     } else if (path.startsWith('items')) {
-      renderItems(state, watchedState, itemsList);
-    } else if (path === 'modal.itemIndex') {
+      renderItems(state, watchedState, itemsList, i18n);
+    } else if (path === 'modal.itemId') {
       renderModal(state, modalEl);
     } else if (path === 'form.isValid') {
       renderFormValidation(state.form, i18n, formEl, feedback);

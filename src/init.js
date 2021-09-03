@@ -5,24 +5,16 @@ import { uniqueId } from 'lodash';
 import watch from './view';
 import parseRss from './parseRss';
 import updateItems from './updatePosts';
+import completeItems from './completeItems';
+
+const addProxy = (url) => {
+  const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
+  proxyUrl.searchParams.set('url', url);
+  proxyUrl.searchParams.set('disableCache', true);
+  return proxyUrl;
+};
 
 export default () => {
-  const addProxy = (url) => {
-    const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
-    proxyUrl.searchParams.set('url', url);
-    proxyUrl.searchParams.set('disableCache', true);
-    return proxyUrl;
-  };
-
-  const completeItems = (items, channelId) => items.map((item) => {
-    const itemId = uniqueId('item_');
-    const completedItem = item;
-    completedItem.channelId = channelId;
-    completedItem.isWatched = false;
-    completedItem.itemId = itemId;
-    return completedItem;
-  });
-
   const state = {
     form: {
       isValid: true,
@@ -33,7 +25,7 @@ export default () => {
       error: null,
     },
     modal: {
-      itemIndex: null,
+      itemId: null,
     },
     items: [],
     channels: [],
@@ -93,6 +85,7 @@ export default () => {
           parsingError: 'Ресурс не содержит валидный RSS',
           unknownError: 'Возникла неизвестная ошибка',
           success: 'RSS успешно загружен',
+          view: 'Просмотр',
         },
       },
     },
@@ -101,10 +94,10 @@ export default () => {
 
     itemsList.addEventListener('click', (e) => {
       if (e.target.tagName !== 'BUTTON') return;
-      const itemIndex = watchedState.items.findIndex((i) => (
+      const item = watchedState.items.find((i) => (
         i.itemId === e.target.dataset.itemId));
-      watchedState.items[itemIndex].isWatched = true;
-      watchedState.modal.itemIndex = itemIndex;
+      item.isWatched = true;
+      watchedState.modal.itemId = item.itemId;
     });
 
     formEl.addEventListener('submit', (e) => {
@@ -142,6 +135,6 @@ export default () => {
           watchedState.addFeedProcess.status = 'error';
         });
     });
-    updateItems(watchedState, addProxy, completeItems);
+    updateItems(watchedState, addProxy);
   });
 };

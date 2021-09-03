@@ -3,8 +3,9 @@
 import { differenceBy } from 'lodash';
 import axios from 'axios';
 import parseRss from './parseRss';
+import completeItems from './completeItems';
 
-const updateItems = (watchedState, createUrl, completeItems) => {
+const updateItems = (watchedState, createUrl) => {
   Promise.resolve()
     .then(() => {
       watchedState.channels.map((channel) => ({ channelLink: channel.link, id: channel.id }))
