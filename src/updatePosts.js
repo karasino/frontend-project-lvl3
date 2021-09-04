@@ -6,19 +6,21 @@ import parseRss from './parseRss';
 import completeItems from './completeItems';
 
 const updateItems = (watchedState, createUrl) => {
-  Promise.resolve()
-    .then(() => {
-      watchedState.channels.map((channel) => ({ channelLink: channel.link, id: channel.id }))
-        .forEach(({ channelLink, id }) => {
-          axios.get(createUrl(channelLink).toString())
-            .then((response) => {
-              const { items } = parseRss(response.data.contents);
-              const uniqueItems = differenceBy(watchedState.items, items, ({ link }) => link);
-              const completedUniqueItems = completeItems(uniqueItems, id);
-              watchedState.items = watchedState.items.concat(completedUniqueItems);
-            });
-        });
-    })
+  const promises = watchedState.channels.map((channel) => {
+    const {
+      link: channelLink,
+      id,
+    } = channel;
+    return axios.get(createUrl(channelLink).toString())
+      .then((response) => {
+        const { items } = parseRss(response.data.contents);
+        const uniqueItems = differenceBy(watchedState.items, items, ({ link }) => link);
+        const completedUniqueItems = completeItems(uniqueItems, id);
+        watchedState.items = watchedState.items.concat(completedUniqueItems);
+        return true;
+      });
+  });
+  Promise.all(promises)
     .then(() => {
       setTimeout(() => updateItems(watchedState, createUrl), 5000);
     });

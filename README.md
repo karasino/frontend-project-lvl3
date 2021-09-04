@@ -16,3 +16,4 @@ $ make install
 ## Usage
 
 You can run the application locally via webpack dev server by using command "make start".
+Also you can check how it works in browser [here](https://frontend-project-lvl3-karasino.vercel.app).
