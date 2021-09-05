@@ -21,7 +21,7 @@ const updateItems = (watchedState, createUrl) => {
       });
   });
   Promise.all(promises)
-    .then(() => {
+    .finally(() => {
       setTimeout(() => updateItems(watchedState, createUrl), 5000);
     });
 };

@@ -93,7 +93,10 @@ const renderFormSending = (addFeedProcess, i18n, formEl, feedback) => {
       submit.removeAttribute('disabled');
       feedback.textContent = i18n('success');
       break;
+    case 'ready':
+      break;
     default:
+      feedback.textContent = i18n('unknownError');
       break;
   }
 };

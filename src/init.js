@@ -93,7 +93,7 @@ export default () => {
     const watchedState = watch(state, t, domElems);
 
     itemsList.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'BUTTON') return;
+      if (!e.target.dataset.itemId) return;
       const item = watchedState.items.find((i) => (
         i.itemId === e.target.dataset.itemId));
       item.isWatched = true;
@@ -127,7 +127,7 @@ export default () => {
         .catch((error) => {
           if (error.isAxiosError) {
             watchedState.addFeedProcess.error = 'networkError';
-          } else if (error.isValidationError) {
+          } else if (error.isParserError) {
             watchedState.addFeedProcess.error = 'parsingError';
           } else {
             watchedState.addFeedProcess.error = 'unknownError';

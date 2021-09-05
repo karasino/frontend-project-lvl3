@@ -4,7 +4,7 @@ export default (data) => {
   const parserError = xmlDocument.querySelector('parsererror');
   if (parserError) {
     const error = new Error(parserError.textContent);
-    error.isValidationError = true;
+    error.isParserError = true;
     throw error;
   }
   const channelTitle = xmlDocument.querySelector('channel > title');
