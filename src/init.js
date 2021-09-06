@@ -1,17 +1,47 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
+
 import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
-import { uniqueId } from 'lodash';
+import { uniqueId, differenceBy } from 'lodash';
 import watch from './view';
 import parseRss from './parseRss';
-import updateItems from './updatePosts';
-import completeItems from './completeItems';
 
 const addProxy = (url) => {
   const proxyUrl = new URL('https://hexlet-allorigins.herokuapp.com/get');
   proxyUrl.searchParams.set('url', url);
   proxyUrl.searchParams.set('disableCache', true);
   return proxyUrl;
+};
+
+const completeItems = (items, channelId) => items.map((item) => {
+  const itemId = uniqueId('item_');
+  const completedItem = item;
+  completedItem.channelId = channelId;
+  completedItem.isWatched = false;
+  completedItem.itemId = itemId;
+  return completedItem;
+});
+
+const updateItems = (watchedState, createUrl) => {
+  const promises = watchedState.channels.map((channel) => {
+    const {
+      link: channelLink,
+      id,
+    } = channel;
+    return axios.get(createUrl(channelLink).toString())
+      .then((response) => {
+        const { items } = parseRss(response.data.contents);
+        const uniqueItems = differenceBy(watchedState.items, items, ({ link }) => link);
+        const completedUniqueItems = completeItems(uniqueItems, id);
+        watchedState.items = watchedState.items.concat(completedUniqueItems);
+        return true;
+      });
+  });
+  Promise.all(promises)
+    .finally(() => {
+      setTimeout(() => updateItems(watchedState, createUrl), 5000);
+    });
 };
 
 export default () => {

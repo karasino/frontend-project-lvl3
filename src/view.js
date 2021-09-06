@@ -96,8 +96,7 @@ const renderFormSending = (addFeedProcess, i18n, formEl, feedback) => {
     case 'ready':
       break;
     default:
-      feedback.textContent = i18n('unknownError');
-      break;
+      throw new Error('unknown error');
   }
 };
 
